@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(EfCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EfCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(EfCoreVersion)" PrivateAssets="all" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEfVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AegisBank.Application\AegisBank.Application.csproj" />
+    <ProjectReference Include="..\AegisBank.Domain\AegisBank.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AegisBank.UnitTests" />
+    <InternalsVisibleTo Include="AegisBank.Benchmarks" />
+  </ItemGroup>
+
+  <!--
+    The native engine is built by CMake (scripts/build-engine.sh) into
+    artifacts/native/. It is copied next to every binary that references this
+    project. When the file is absent the build still succeeds and the engine
+    health check reports the library as unavailable.
+  -->
+  <ItemGroup>
+    <None Include="$(AegisNativeDir)libaegis_engine.so" Condition="Exists('$(AegisNativeDir)libaegis_engine.so')"
+          Link="libaegis_engine.so" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(AegisNativeDir)aegis_engine.dll" Condition="Exists('$(AegisNativeDir)aegis_engine.dll')"
+          Link="aegis_engine.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(AegisNativeDir)libaegis_engine.dylib" Condition="Exists('$(AegisNativeDir)libaegis_engine.dylib')"
+          Link="libaegis_engine.dylib" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+</Project>

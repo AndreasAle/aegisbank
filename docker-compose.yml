@@ -1,0 +1,96 @@
+# Local development stack. Copy .env.example to .env first.
+#
+#   docker compose up --build
+#
+#   API + OpenAPI   http://localhost:8080/swagger
+#   Dashboard       http://localhost:8081
+#   PostgreSQL      localhost:5432
+#
+# The stack runs with ASPNETCORE_ENVIRONMENT=Development so that the fictional
+# demo dataset can be seeded and OpenAPI is served. It is not a production setup.
+name: aegisbank
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aegisbank}
+      POSTGRES_USER: ${POSTGRES_USER:-aegis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env}
+    command: ["postgres", "-c", "max_connections=200"]
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Database: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-aegisbank};Username=${POSTGRES_USER:-aegis};Password=${POSTGRES_PASSWORD};Maximum Pool Size=${DB_MAX_POOL:-80}"
+      Database__MigrateOnStartup: "true"
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?copy .env.example to .env}
+      Security__RequireHttps: "false"
+      OpenApi__Enabled: "true"
+      RateLimiting__Enabled: ${RATE_LIMITING_ENABLED:-true}
+      RateLimiting__PermitPerMinute: ${RATE_LIMIT_PER_MINUTE:-600}
+      Seed__Enabled: ${SEED_ENABLED:-true}
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:-}
+      Seed__AuditorPassword: ${SEED_AUDITOR_PASSWORD:-}
+      Seed__CustomerPassword: ${SEED_CUSTOMER_PASSWORD:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: .
+      target: dashboard
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Database: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-aegisbank};Username=${POSTGRES_USER:-aegis};Password=${POSTGRES_PASSWORD};Maximum Pool Size=20"
+      Security__RequireHttps: "false"
+      DataProtection__KeysPath: /keys
+      Benchmarks__SummaryPath: /benchmarks/summary.json
+    ports:
+      - "${DASHBOARD_PORT:-8081}:8080"
+    volumes:
+      - dashboard-keys:/keys
+      - ./benchmarks/results:/benchmarks:ro
+    depends_on:
+      # The API applies migrations and seeds; the console starts once it is ready.
+      api:
+        condition: service_healthy
+
+  # Load test: docker compose --profile bench run --rm k6
+  k6:
+    image: grafana/k6:latest
+    profiles: ["bench"]
+    environment:
+      BASE_URL: http://api:8080
+      LOAD_USERNAME: ops.admin
+      LOAD_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      LOAD_VUS: ${LOAD_VUS:-32}
+      LOAD_DURATION: ${LOAD_DURATION:-60s}
+      LOAD_WARMUP: ${LOAD_WARMUP:-15s}
+    volumes:
+      - ./benchmarks/k6:/scripts:ro
+      - ./benchmarks/results:/results
+    user: "0:0"
+    command: ["run", "/scripts/transfers.js"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  dashboard-keys:

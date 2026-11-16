@@ -1,0 +1,55 @@
+@page "{id:guid}"
+@model AegisBank.Dashboard.Pages.Ledger.JournalModel
+@{
+    var j = Model.Journal;
+    ViewData["Title"] = j.ReferenceNumber;
+    ViewData["Crumb"] = "Ledger explorer";
+}
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Ledger lines</h2>
+            <span class="st @(j.IsBalanced ? "ok" : "bad")">@(j.IsBalanced ? "Balanced" : "Unbalanced")</span>
+        </div>
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>#</th><th>Account</th><th class="num">Debit (Rp)</th><th class="num">Credit (Rp)</th></tr></thead>
+                <tbody>
+                @foreach (var l in j.Lines)
+                {
+                    <tr>
+                        <td class="dim">@l.LineNumber</td>
+                        <td>
+                            <a class="mono" asp-page="/Accounts/Details" asp-route-id="@l.AccountId">@l.AccountNumber</a>
+                            <span class="dim">@l.AccountName</span>
+                        </td>
+                        <td class="num">@(l.DebitMinorUnits > 0 ? Ui.Amount(l.DebitMinorUnits) : "")</td>
+                        <td class="num">@(l.CreditMinorUnits > 0 ? Ui.Amount(l.CreditMinorUnits) : "")</td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td></td><td>Total</td>
+                    <td class="num">@Ui.Amount(j.TotalDebitMinorUnits)</td>
+                    <td class="num">@Ui.Amount(j.TotalCreditMinorUnits)</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="panel-foot"><span>Posted entries are immutable. The database rejects any update or delete of these rows.</span></div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Entry</h2></div>
+        <dl class="facts">
+            <dt>Reference</dt><dd class="mono">@j.ReferenceNumber</dd>
+            <dt>Description</dt><dd>@j.Description</dd>
+            <dt>Currency</dt><dd>@j.Currency</dd>
+            <dt>Posted</dt><dd>@Ui.Time(j.CreatedAt) UTC</dd>
+            <dt>Transfer</dt><dd><a asp-page="/Transfers/Details" asp-route-id="@j.TransferId">Open transfer</a></dd>
+            <dt>Identifier</dt><dd class="mono">@j.Id</dd>
+        </dl>
+    </section>
+</div>

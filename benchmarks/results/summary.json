@@ -1,0 +1,238 @@
+{
+  "recordedAt": "2026-11-16T05:14:12Z",
+  "machine": "AMD Ryzen 7 6800H (8C/16T) laptop, Windows 11, Docker 28.4 in WSL2 (6.6 GiB RAM), Ubuntu 24.04 containers",
+  "notes": "Load generator, API and PostgreSQL shared this one machine. GCC 13.3, .NET 10.0.15, PostgreSQL 17.",
+  "entries": [
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "cpp_domain_evaluate_transfer (dataset 4,096)",
+      "metric": "median time per decision",
+      "value": 4.512,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "cpp_domain_evaluate_transfer (dataset 4,096)",
+      "metric": "throughput",
+      "value": 221628703.443,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer (dataset 4,096)",
+      "metric": "median time per decision",
+      "value": 26.101,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer (dataset 4,096)",
+      "metric": "throughput",
+      "value": 38313057.623,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer_batch (dataset 4,096)",
+      "metric": "median time per decision",
+      "value": 28.7,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer_batch (dataset 4,096)",
+      "metric": "throughput",
+      "value": 34842833.623,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "cpp_domain_evaluate_transfer (dataset 1,000,000)",
+      "metric": "median time per decision",
+      "value": 7.744,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "cpp_domain_evaluate_transfer (dataset 1,000,000)",
+      "metric": "throughput",
+      "value": 129133115.193,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer (dataset 1,000,000)",
+      "metric": "median time per decision",
+      "value": 25.447,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer (dataset 1,000,000)",
+      "metric": "throughput",
+      "value": 39297196.365,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer_batch (dataset 1,000,000)",
+      "metric": "median time per decision",
+      "value": 39.994,
+      "unit": "ns"
+    },
+    {
+      "suite": "Native C++ (no runtime)",
+      "name": "c_abi_evaluate_transfer_batch (dataset 1,000,000)",
+      "metric": "throughput",
+      "value": 25003676.791,
+      "unit": "decisions/s"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine via wrapper (1 P/Invoke per transfer)'",
+      "metric": "mean time per decision",
+      "value": 64.90661959648132,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine via wrapper (1 P/Invoke per transfer)'",
+      "metric": "standard deviation",
+      "value": 2.4180906796361668,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine via wrapper (1 P/Invoke per transfer)'",
+      "metric": "allocated per decision",
+      "value": 0,
+      "unit": "bytes"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine raw P/Invoke (pre-built structs)'",
+      "metric": "mean time per decision",
+      "value": 29.47736337184906,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine raw P/Invoke (pre-built structs)'",
+      "metric": "standard deviation",
+      "value": 0.9107823332095297,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine raw P/Invoke (pre-built structs)'",
+      "metric": "allocated per decision",
+      "value": 0,
+      "unit": "bytes"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine batch (1 P/Invoke per 4096 transfers)'",
+      "metric": "mean time per decision",
+      "value": 29.344607216971262,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine batch (1 P/Invoke per 4096 transfers)'",
+      "metric": "standard deviation",
+      "value": 0.8463967032251973,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C++ engine batch (1 P/Invoke per 4096 transfers)'",
+      "metric": "allocated per decision",
+      "value": 0,
+      "unit": "bytes"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C# reference implementation'",
+      "metric": "mean time per decision",
+      "value": 5.582810052980979,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C# reference implementation'",
+      "metric": "standard deviation",
+      "value": 0.23797377093165006,
+      "unit": "ns"
+    },
+    {
+      "suite": "Engine via .NET (BenchmarkDotNet)",
+      "name": "'C# reference implementation'",
+      "metric": "allocated per decision",
+      "value": 0,
+      "unit": "bytes"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "requests",
+      "value": 15654,
+      "unit": "requests"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "throughput",
+      "value": 260.9,
+      "unit": "requests/s"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "latency p50",
+      "value": 27.484509000000003,
+      "unit": "ms"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "latency p95",
+      "value": 745.3753458499983,
+      "unit": "ms"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "latency p99",
+      "value": 1840.1633491899997,
+      "unit": "ms"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "latency max",
+      "value": 4783.062053,
+      "unit": "ms"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "completed (success rate)",
+      "value": 100,
+      "unit": "%"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "rejected by engine",
+      "value": 0,
+      "unit": "%"
+    },
+    {
+      "suite": "Full stack (k6: HTTP + engine + PostgreSQL)",
+      "name": "32 VUs, 60s",
+      "metric": "errors (failure rate)",
+      "value": 0,
+      "unit": "%"
+    }
+  ]
+}

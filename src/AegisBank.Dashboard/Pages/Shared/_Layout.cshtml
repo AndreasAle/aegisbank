@@ -1,0 +1,73 @@
+@using AegisBank.Infrastructure.Web
+@{
+    var path = Context.Request.Path.Value ?? "/";
+    string On(string prefix, bool exact = false) =>
+        (exact ? path == prefix || path == "/Index" : path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) ? "on" : "";
+    var username = User.FindFirst(AegisClaims.Username)?.Value;
+    var role = User.FindFirst(AegisClaims.Role)?.Value;
+    var notice = TempData["Notice"] as string;
+    var noticeKind = TempData["NoticeKind"] as string ?? "ok";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>@ViewData["Title"] · AegisBank Console</title>
+    <link rel="stylesheet" href="~/css/console.css" asp-append-version="true" />
+</head>
+<body>
+<div class="shell">
+    <aside class="side">
+        <div class="brand">
+            <div class="brand-name">Aegis<span>Bank</span></div>
+            <div class="brand-sub">Operations console</div>
+        </div>
+        <nav class="nav" aria-label="Primary">
+            <div class="nav-group">Monitor</div>
+            <a class="@On("/", true)" asp-page="/Index">Overview</a>
+            <a class="@On("/Monitoring")" asp-page="/Monitoring/Index">System monitoring</a>
+            <div class="nav-group">Banking</div>
+            <a class="@On("/Accounts")" asp-page="/Accounts/Index">Accounts</a>
+            <a class="@(path.StartsWith("/Transfers/New", StringComparison.OrdinalIgnoreCase) ? "on" : "")" asp-page="/Transfers/New">Transfer simulator</a>
+            <a class="@(path.StartsWith("/Transfers", StringComparison.OrdinalIgnoreCase) && !path.StartsWith("/Transfers/New", StringComparison.OrdinalIgnoreCase) ? "on" : "")" asp-page="/Transfers/Index">Transaction history</a>
+            <div class="nav-group">Control</div>
+            <a class="@On("/Ledger")" asp-page="/Ledger/Index">Ledger explorer</a>
+            <a class="@On("/Audit")" asp-page="/Audit/Index">Audit log</a>
+        </nav>
+        <div class="who">
+            <div>
+                <div class="who-name">@username</div>
+                <div class="who-role">@role</div>
+            </div>
+            <form method="post" asp-page="/Account/Logout">
+                <button type="submit">Sign out</button>
+            </form>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="top">
+            <div>
+                @if (ViewData["Crumb"] is string crumb)
+                {
+                    <div class="crumb">@crumb</div>
+                }
+                <h1>@ViewData["Title"]</h1>
+            </div>
+            <div class="top-meta">
+                <span class="clock mono">@DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                <span class="sim-tag" title="No real money or banking network is involved">Simulation</span>
+            </div>
+        </header>
+        <main class="content">
+            @if (!string.IsNullOrEmpty(notice))
+            {
+                <div class="note @noticeKind" role="status">@notice</div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+</div>
+</body>
+</html>

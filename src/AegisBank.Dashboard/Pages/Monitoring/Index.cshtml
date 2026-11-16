@@ -1,0 +1,109 @@
+@page
+@model AegisBank.Dashboard.Pages.Monitoring.IndexModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "System monitoring";
+    var h = Model.Health;
+    var b = Model.Benchmarks;
+}
+
+<div class="note @(h.Healthy ? "ok" : "bad")">
+    <strong>@(h.Healthy ? "All components are operational." : "One or more components need attention.")</strong>
+    Checked at @Ui.Time(h.CheckedAt) UTC by instance <span class="mono">@h.InstanceId</span> (@h.Environment).
+</div>
+
+<div class="cols even">
+    <section class="panel">
+        <div class="panel-head"><h2>Components</h2></div>
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Component</th><th>State</th><th>Detail</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td>Operations console</td>
+                    <td><span class="st ok">Healthy</span></td>
+                    <td>Serving this page</td>
+                </tr>
+                @foreach (var c in h.Components)
+                {
+                    <tr>
+                        <td>@c.Name</td>
+                        <td><span class="st @(c.Healthy ? "ok" : "bad")">@(c.Healthy ? "Healthy" : "Unhealthy")</span></td>
+                        <td>@c.Detail</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot">
+            <span>Probes: <span class="mono">/health/live</span> and <span class="mono">/health/ready</span> on each service.</span>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Recent rejected transfers</h2><a asp-page="/Transfers/Index" asp-route-Status="Rejected">All rejected</a></div>
+        @if (h.RecentRejections.Count == 0)
+        {
+            <div class="empty">No transfers have been rejected.</div>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead><tr><th>Time (UTC)</th><th>Reference</th><th>Reason</th><th class="num">Amount (Rp)</th></tr></thead>
+                    <tbody>
+                    @foreach (var t in h.RecentRejections)
+                    {
+                        <tr>
+                            <td class="nowrap">@Ui.Time(t.CreatedAt)</td>
+                            <td><a class="mono" asp-page="/Transfers/Details" asp-route-id="@t.Id">@t.ReferenceNumber</a></td>
+                            <td class="mono">@t.FailureCode</td>
+                            <td class="num">@Ui.Amount(t.AmountMinorUnits)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Benchmark results</h2>
+        @if (b?.RecordedAt is { } recorded)
+        {
+            <span class="dim">recorded @Ui.Time(recorded) UTC</span>
+        }
+    </div>
+    @if (b is null)
+    {
+        <div class="empty">
+            No benchmark results have been recorded for this deployment.
+            Run the suites in <span class="mono">benchmarks/</span>; figures appear here only after they have been measured.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Suite</th><th>Benchmark</th><th>Metric</th><th class="num">Value</th><th>Unit</th></tr></thead>
+                <tbody>
+                @foreach (var e in b.Entries)
+                {
+                    <tr>
+                        <td>@e.Suite</td>
+                        <td class="mono">@e.Name</td>
+                        <td>@e.Metric</td>
+                        <td class="num">@e.Value.ToString(e.Value >= 1000 ? "N0" : "0.###", CultureInfo.InvariantCulture)</td>
+                        <td class="dim">@e.Unit</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot">
+            <span>@(b.Machine ?? "Machine not recorded"). @b.Notes</span>
+        </div>
+    }
+</section>

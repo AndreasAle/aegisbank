@@ -1,0 +1,26 @@
+{
+  "benchmark": "k6_full_stack_transfers",
+  "recordedAt": "2026-11-16T05:13:45.694Z",
+  "baseUrl": "http://api:8080",
+  "virtualUsers": 32,
+  "measuredDuration": "60s",
+  "warmupDuration": "15s",
+  "requests": 15654,
+  "requestsPerSecond": 260.9,
+  "completed": 15654,
+  "rejectedByEngine": 0,
+  "errors": 0,
+  "successRate": 1,
+  "businessRejectionRate": 0,
+  "errorRate": 0,
+  "latencyMs": {
+    "avg": 122.5844261054679,
+    "min": 9.138514,
+    "p50": 27.484509000000003,
+    "p90": 177.5307121000003,
+    "p95": 745.3753458499983,
+    "p99": 1840.1633491899997,
+    "max": 4783.062053
+  },
+  "ledgerConsistentAfterRun": true
+}

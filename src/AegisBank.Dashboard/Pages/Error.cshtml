@@ -1,0 +1,44 @@
+@page
+@using AegisBank.Infrastructure.Web
+@attribute [Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryToken]
+@{
+    Layout = null;
+    var status = int.TryParse(Request.Query["status"], out var s) ? s : 500;
+    var title = status switch
+    {
+        404 => "Page not found",
+        403 => "Access denied",
+        429 => "Too many attempts",
+        400 => "The request could not be processed",
+        _ => "Something went wrong",
+    };
+    var detail = status switch
+    {
+        404 => "The page or record does not exist.",
+        403 => "Your role does not permit this action.",
+        429 => "Wait a minute and try again.",
+        400 => "The form may have expired. Reload the page and try again.",
+        _ => "The error has been logged. Quote the reference below when reporting it.",
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title · AegisBank Console</title>
+    <link rel="stylesheet" href="~/css/console.css" asp-append-version="true" />
+</head>
+<body>
+<div class="content solo">
+    <div class="panel">
+        <div class="panel-head"><h2>@title</h2><span class="dim mono">@status</span></div>
+        <div class="panel-body">
+            <p>@detail</p>
+            <p class="dim">Reference <span class="mono">@HttpContext.GetCorrelationId()</span></p>
+            <a class="btn" href="/">Back to overview</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

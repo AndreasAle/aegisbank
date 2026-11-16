@@ -1,0 +1,90 @@
+@page "{id:guid}"
+@model AegisBank.Dashboard.Pages.Transfers.DetailsModel
+@{
+    var t = Model.Transfer;
+    var j = Model.Journal;
+    ViewData["Title"] = t.ReferenceNumber;
+    ViewData["Crumb"] = "Transaction history";
+}
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head">
+            <h2>@Ui.KindLabel(t.Kind)</h2>
+            <span class="st @Ui.StatusClass(t.Status)">@t.Status</span>
+        </div>
+        <dl class="facts">
+            <dt>Reference</dt><dd class="mono">@t.ReferenceNumber</dd>
+            <dt>Amount</dt><dd>@Ui.Money(t.AmountMinorUnits, t.Currency) <span class="dim mono">(@t.AmountMinorUnits minor units)</span></dd>
+            <dt>Debited account</dt>
+            <dd><a class="mono" asp-page="/Accounts/Details" asp-route-id="@t.SourceAccountId">@t.SourceAccountNumber</a></dd>
+            <dt>Credited account</dt>
+            <dd><a class="mono" asp-page="/Accounts/Details" asp-route-id="@t.DestinationAccountId">@t.DestinationAccountNumber</a></dd>
+            <dt>Recorded</dt><dd>@Ui.Time(t.CreatedAt) UTC</dd>
+            <dt>Completed</dt><dd>@Ui.Time(t.CompletedAt)@(t.CompletedAt is null ? "" : " UTC")</dd>
+            @if (t.FailureCode is not null)
+            {
+                <dt>Engine decision</dt>
+                <dd><span class="mono">@t.FailureCode</span><br /><span class="dim">@t.FailureReason</span></dd>
+            }
+            @if (t.ReversalOfTransferId is { } originalId)
+            {
+                <dt>Reverses</dt>
+                <dd><a asp-page="/Transfers/Details" asp-route-id="@originalId">Original transfer</a></dd>
+            }
+            <dt>Initiated by</dt><dd class="mono">@t.InitiatedByUserId</dd>
+            <dt>Identifier</dt><dd class="mono">@t.Id</dd>
+        </dl>
+        @if (Model.CanReverse)
+        {
+            <div class="panel-foot">
+                <span>A reversal posts a new, opposite journal entry. Posted entries are never edited.</span>
+                <form method="post" asp-page-handler="Reverse" class="inline-form">
+                    <input type="hidden" name="reversalKey" value="@Model.ReversalKey" />
+                    <button type="submit" class="btn danger small">Post reversal</button>
+                </form>
+            </div>
+        }
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Journal entry</h2>
+            @if (j is not null)
+            {
+                <span class="st @(j.IsBalanced ? "ok" : "bad")">@(j.IsBalanced ? "Balanced" : "Unbalanced")</span>
+            }
+        </div>
+        @if (j is null)
+        {
+            <div class="empty">No journal entry. Rejected transfers do not touch the ledger.</div>
+        }
+        else
+        {
+            <div class="journal">
+                <div class="journal-head">
+                    <a class="mono" asp-page="/Ledger/Journal" asp-route-id="@j.Id">@j.ReferenceNumber</a>
+                    <span class="desc">@j.Description</span>
+                </div>
+                <table class="lines">
+                    <thead><tr><th>Account</th><th class="num">Debit</th><th class="num">Credit</th></tr></thead>
+                    <tbody>
+                    @foreach (var l in j.Lines)
+                    {
+                        <tr>
+                            <td class="@(l.CreditMinorUnits > 0 ? "cr" : "")"><span class="mono">@l.AccountNumber</span> <span class="dim">@l.AccountName</span></td>
+                            <td class="num">@(l.DebitMinorUnits > 0 ? Ui.Amount(l.DebitMinorUnits) : "")</td>
+                            <td class="num">@(l.CreditMinorUnits > 0 ? Ui.Amount(l.CreditMinorUnits) : "")</td>
+                        </tr>
+                    }
+                    <tr class="total">
+                        <td>Total</td>
+                        <td class="num">@Ui.Amount(j.TotalDebitMinorUnits)</td>
+                        <td class="num">@Ui.Amount(j.TotalCreditMinorUnits)</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>

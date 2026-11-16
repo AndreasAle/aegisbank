@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AegisBank.Domain/AegisBank.Domain.csproj" />
+    <Project Path="src/AegisBank.Application/AegisBank.Application.csproj" />
+    <Project Path="src/AegisBank.Infrastructure/AegisBank.Infrastructure.csproj" />
+    <Project Path="src/AegisBank.Api/AegisBank.Api.csproj" />
+    <Project Path="src/AegisBank.Dashboard/AegisBank.Dashboard.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AegisBank.UnitTests/AegisBank.UnitTests.csproj" />
+    <Project Path="tests/AegisBank.IntegrationTests/AegisBank.IntegrationTests.csproj" />
+    <Project Path="tests/AegisBank.ConcurrencyTests/AegisBank.ConcurrencyTests.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/AegisBank.Benchmarks/AegisBank.Benchmarks.csproj" />
+  </Folder>
+</Solution>

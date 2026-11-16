@@ -1,0 +1,118 @@
+@page
+@model AegisBank.Dashboard.Pages.Ledger.IndexModel
+@{
+    ViewData["Title"] = "Ledger explorer";
+    var r = Model.Report;
+}
+
+<div class="note @(r.IsConsistent ? "ok" : "bad")">
+    @if (r.IsConsistent)
+    {
+        <strong>Ledger reconciled.</strong>
+        <text> All @r.Checks.Count checks passed against one database snapshot at @Ui.Time(r.VerifiedAt) UTC.</text>
+    }
+    else
+    {
+        <strong>Reconciliation failed.</strong>
+        <text> @r.Checks.Count(c => !c.Passed) of @r.Checks.Count checks report violations. See the table below.</text>
+    }
+</div>
+
+<div class="figures">
+    <div class="figure">
+        <div class="figure-label">Journal entries</div>
+        <div class="figure-value">@Ui.Count(r.JournalCount)</div>
+        <div class="figure-note">@Ui.Count(r.LedgerLineCount) ledger lines</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Total debits</div>
+        <div class="figure-value small">@Ui.Money(r.TotalDebitsMinorUnits)</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Total credits</div>
+        <div class="figure-value small">@Ui.Money(r.TotalCreditsMinorUnits)</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Assets</div>
+        <div class="figure-value small">@Ui.Money(r.TotalAssetBalanceMinorUnits)</div>
+        <div class="figure-note">vault cash</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Liabilities</div>
+        <div class="figure-value small">@Ui.Money(r.TotalLiabilityBalanceMinorUnits)</div>
+        <div class="figure-note">customer deposits</div>
+    </div>
+</div>
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head"><h2>Journal entries</h2><span class="dim">newest first</span></div>
+        <form method="get" class="filters">
+            <div class="field grow">
+                <label for="reference">Reference starts with</label>
+                <input id="reference" name="Reference" type="search" class="mono" value="@Model.Reference" placeholder="JE-" maxlength="32" />
+            </div>
+            <button type="submit" class="btn">Apply</button>
+            <a class="btn" asp-page="/Ledger/Index">Reset</a>
+        </form>
+        @if (Model.Journals.Items.Count == 0)
+        {
+            <div class="empty">No journal entries.</div>
+        }
+        @foreach (var j in Model.Journals.Items)
+        {
+            <div class="journal">
+                <div class="journal-head">
+                    <a class="mono" asp-page="/Ledger/Journal" asp-route-id="@j.Id">@j.ReferenceNumber</a>
+                    <span class="desc">@j.Description</span>
+                    <span class="dim nowrap">@Ui.Time(j.CreatedAt)</span>
+                    <span class="st @(j.IsBalanced ? "ok" : "bad")">@(j.IsBalanced ? "Balanced" : "Unbalanced")</span>
+                </div>
+                <table class="lines">
+                    <tbody>
+                    @foreach (var l in j.Lines)
+                    {
+                        <tr>
+                            <td class="@(l.CreditMinorUnits > 0 ? "cr" : "")">
+                                <span class="dim">@(l.DebitMinorUnits > 0 ? "Dr" : "Cr")</span>
+                                <a class="mono" asp-page="/Accounts/Details" asp-route-id="@l.AccountId">@l.AccountNumber</a>
+                                <span class="dim">@l.AccountName</span>
+                            </td>
+                            <td class="num">@(l.DebitMinorUnits > 0 ? Ui.Amount(l.DebitMinorUnits) : "")</td>
+                            <td class="num">@(l.CreditMinorUnits > 0 ? Ui.Amount(l.CreditMinorUnits) : "")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <partial name="_Pager" model="new PagerModel(Model.Journals.Page, Model.Journals.TotalPages, Model.Journals.TotalCount, Model.Journals.PageSize, Model.PageUrl)" />
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Reconciliation checks</h2></div>
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Invariant</th><th>Result</th></tr></thead>
+                <tbody>
+                @foreach (var c in r.Checks)
+                {
+                    <tr>
+                        <td>
+                            @c.Description
+                            <div class="dim mono">@c.Name</div>
+                            @foreach (var sample in c.Samples)
+                            {
+                                <div class="mono">@sample</div>
+                            }
+                        </td>
+                        <td>
+                            <span class="st @(c.Passed ? "ok" : "bad")">@(c.Passed ? "Pass" : Ui.Count(c.Violations) + " violation(s)")</span>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

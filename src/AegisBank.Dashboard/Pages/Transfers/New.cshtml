@@ -1,0 +1,147 @@
+@page
+@model AegisBank.Dashboard.Pages.Transfers.NewModel
+@{
+    ViewData["Title"] = "Transfer simulator";
+    var outcome = Model.Outcome;
+}
+
+@if (!Model.IsAdmin)
+{
+    <div class="note warn">Your role is read-only. Submitting transfers requires the Admin role.</div>
+}
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head"><h2>Internal transfer</h2><span class="dim">IDR</span></div>
+        <div class="panel-body">
+            <form method="post" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <div class="field">
+                    <label asp-for="Input.SourceAccountId">From account</label>
+                    <select asp-for="Input.SourceAccountId">
+                        <option value="">Select source</option>
+                        @foreach (var a in Model.Accounts)
+                        {
+                            <option value="@a.Id">@a.AccountNumber · @a.CustomerName · @a.Name · @Ui.Money(a.AvailableBalanceMinorUnits)@(a.Status != "Active" ? " · " + a.Status : "")</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Input.SourceAccountId" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.DestinationAccountId">To account</label>
+                    <select asp-for="Input.DestinationAccountId">
+                        <option value="">Select destination</option>
+                        @foreach (var a in Model.Accounts)
+                        {
+                            <option value="@a.Id">@a.AccountNumber · @a.CustomerName · @a.Name@(a.Status != "Active" ? " · " + a.Status : "")</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Input.DestinationAccountId" class="field-error"></span>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label asp-for="Input.Amount">Amount (Rp)</label>
+                        <input asp-for="Input.Amount" type="text" inputmode="decimal" placeholder="150000" />
+                        <span asp-validation-for="Input.Amount" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Input.IdempotencyKey">Idempotency key</label>
+                        <input asp-for="Input.IdempotencyKey" type="text" class="mono" spellcheck="false" />
+                        <span asp-validation-for="Input.IdempotencyKey" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary" disabled="@(!Model.IsAdmin)">Submit transfer</button>
+                    <a class="btn" asp-page="/Transfers/New">New key</a>
+                </div>
+                <div class="field-hint">
+                    The key stays in the form after you submit. Submit again unchanged to see a replay; change the amount and submit to see a conflict.
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <div>
+        @if (Model.RequestError is not null)
+        {
+            <section class="panel">
+                <div class="panel-head"><h2>Request not processed</h2><span class="st bad">@Model.RequestErrorCode</span></div>
+                <div class="panel-body">
+                    <p>@Model.RequestError</p>
+                    <p class="dim">
+                        @if (Model.RequestErrorCode == "idempotency_key_conflict")
+                        {
+                            <text>The key already belongs to a different request. Nothing was posted. Use “New key” for a new transfer.</text>
+                        }
+                        else
+                        {
+                            <text>Nothing was recorded for this key; it can be used again.</text>
+                        }
+                    </p>
+                </div>
+            </section>
+        }
+        else if (outcome is not null)
+        {
+            var t = outcome.Transfer;
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Result</h2>
+                    <span class="st @Ui.StatusClass(t.Status)">@t.Status</span>
+                </div>
+                <dl class="facts">
+                    <dt>Reference</dt>
+                    <dd><a class="mono" asp-page="/Transfers/Details" asp-route-id="@t.Id">@t.ReferenceNumber</a></dd>
+                    <dt>Amount</dt>
+                    <dd>@Ui.Money(t.AmountMinorUnits, t.Currency)</dd>
+                    <dt>From → to</dt>
+                    <dd class="mono">@t.SourceAccountNumber → @t.DestinationAccountNumber</dd>
+                    @if (t.FailureCode is not null)
+                    {
+                        <dt>Engine decision</dt>
+                        <dd><span class="mono">@t.FailureCode</span><br /><span class="dim">@t.FailureReason</span></dd>
+                    }
+                    <dt>Idempotency</dt>
+                    <dd>
+                        @if (outcome.Replayed)
+                        {
+                            <span class="st warn">Replayed</span>
+                            <div class="dim">This key was already processed. The stored result was returned and no new posting was made.</div>
+                        }
+                        else
+                        {
+                            <span class="st ok">First execution</span>
+                            <div class="dim">The request was evaluated by the engine and its outcome stored under this key.</div>
+                        }
+                    </dd>
+                    <dt>Recorded at</dt>
+                    <dd>@Ui.Time(t.CreatedAt) UTC</dd>
+                    <dt>Journal</dt>
+                    <dd>
+                        @if (t.JournalEntryId is { } journalId)
+                        {
+                            <a asp-page="/Ledger/Journal" asp-route-id="@journalId">View balanced entry</a>
+                        }
+                        else
+                        {
+                            <span class="dim">None. Rejected transfers do not touch the ledger.</span>
+                        }
+                    </dd>
+                </dl>
+            </section>
+        }
+        else
+        {
+            <section class="panel">
+                <div class="panel-head"><h2>How a transfer is processed</h2></div>
+                <div class="panel-body">
+                    <p>1. The idempotency key is claimed inside a database transaction.</p>
+                    <p>2. Both account rows are locked in a fixed order and their balances read.</p>
+                    <p>3. The native engine validates the request and returns the two ledger instructions.</p>
+                    <p>4. Transfer, journal entry, ledger lines and balances are written and committed together.</p>
+                    <p class="dim">A rejection (for example insufficient funds) is recorded as a transfer with status Rejected and no journal entry.</p>
+                </div>
+            </section>
+        }
+    </div>
+</div>

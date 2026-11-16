@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    name: C++ engine (build + GoogleTest)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ cmake ninja-build libgtest-dev
+      - name: Build and test
+        run: bash scripts/build-engine.sh
+      - name: Native benchmark (smoke run, numbers are not published)
+        run: build/engine/aegis_engine_bench > /dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-engine
+          path: artifacts/native/libaegis_engine.so
+          if-no-files-found: error
+
+  dotnet:
+    name: .NET (build + unit, integration, concurrency tests)
+    runs-on: ubuntu-24.04
+    needs: native
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aegis
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aegis"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AEGIS_TEST_DB: Host=localhost;Port=5432;Username=aegis;Password=ci-only-password
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-engine
+          path: artifacts/native
+      - name: Restore
+        run: dotnet restore AegisBank.slnx
+      - name: Build
+        run: dotnet build AegisBank.slnx -c Release --no-restore -warnaserror
+      - name: Unit tests
+        run: dotnet test tests/AegisBank.UnitTests -c Release --no-build --logger "trx;LogFileName=unit.trx"
+      - name: Integration tests (PostgreSQL)
+        run: dotnet test tests/AegisBank.IntegrationTests -c Release --no-build --logger "trx;LogFileName=integration.trx"
+      - name: Concurrency tests (PostgreSQL)
+        run: dotnet test tests/AegisBank.ConcurrencyTests -c Release --no-build --logger "trx;LogFileName=concurrency.trx"
+      - name: Migrations match the model
+        run: |
+          dotnet tool install --global dotnet-ef --version "10.0.*"
+          cd src/AegisBank.Infrastructure
+          dotnet ef migrations has-pending-model-changes --configuration Release --no-build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+
+  docker:
+    name: Docker images + compose smoke test
+    runs-on: ubuntu-24.04
+    needs: dotnet
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment file
+        run: |
+          cp .env.example .env
+          sed -i "s|^JWT_SIGNING_KEY=.*|JWT_SIGNING_KEY=$(openssl rand -base64 48 | tr -d '\n=+/')|" .env
+          sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 16)|" .env
+      - name: Build and start
+        run: docker compose up --build -d
+      - name: Wait for health
+        run: bash scripts/wait-healthy.sh 240
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:8080/health/ready
+          curl -fsS -o /dev/null http://localhost:8080/swagger/v1/swagger.json
+          curl -fsS -o /dev/null http://localhost:8081/Account/Login
+          password=$(grep '^SEED_ADMIN_PASSWORD=' .env | cut -d= -f2-)
+          token=$(curl -fsS -H 'Content-Type: application/json' \
+            -d "{\"username\":\"ops.admin\",\"password\":\"$password\"}" \
+            http://localhost:8080/api/auth/login | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
+          curl -fsS -H "Authorization: Bearer $token" http://localhost:8080/api/ledger/verify \
+            | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["isConsistent"], r; print("ledger consistent,", r["journalCount"], "journals")'
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200
+      - name: Stop
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,34 @@
+suite,benchmark,metric,value,unit
+Native C++ (no runtime),"cpp_domain_evaluate_transfer (dataset 4,096)",median time per decision,4.512,ns
+Native C++ (no runtime),"cpp_domain_evaluate_transfer (dataset 4,096)",throughput,221628703.443,decisions/s
+Native C++ (no runtime),"c_abi_evaluate_transfer (dataset 4,096)",median time per decision,26.101,ns
+Native C++ (no runtime),"c_abi_evaluate_transfer (dataset 4,096)",throughput,38313057.623,decisions/s
+Native C++ (no runtime),"c_abi_evaluate_transfer_batch (dataset 4,096)",median time per decision,28.7,ns
+Native C++ (no runtime),"c_abi_evaluate_transfer_batch (dataset 4,096)",throughput,34842833.623,decisions/s
+Native C++ (no runtime),"cpp_domain_evaluate_transfer (dataset 1,000,000)",median time per decision,7.744,ns
+Native C++ (no runtime),"cpp_domain_evaluate_transfer (dataset 1,000,000)",throughput,129133115.193,decisions/s
+Native C++ (no runtime),"c_abi_evaluate_transfer (dataset 1,000,000)",median time per decision,25.447,ns
+Native C++ (no runtime),"c_abi_evaluate_transfer (dataset 1,000,000)",throughput,39297196.365,decisions/s
+Native C++ (no runtime),"c_abi_evaluate_transfer_batch (dataset 1,000,000)",median time per decision,39.994,ns
+Native C++ (no runtime),"c_abi_evaluate_transfer_batch (dataset 1,000,000)",throughput,25003676.791,decisions/s
+Engine via .NET (BenchmarkDotNet),'C++ engine via wrapper (1 P/Invoke per transfer)',mean time per decision,64.90661959648132,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine via wrapper (1 P/Invoke per transfer)',standard deviation,2.4180906796361668,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine via wrapper (1 P/Invoke per transfer)',allocated per decision,0,bytes
+Engine via .NET (BenchmarkDotNet),'C++ engine raw P/Invoke (pre-built structs)',mean time per decision,29.47736337184906,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine raw P/Invoke (pre-built structs)',standard deviation,0.9107823332095297,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine raw P/Invoke (pre-built structs)',allocated per decision,0,bytes
+Engine via .NET (BenchmarkDotNet),'C++ engine batch (1 P/Invoke per 4096 transfers)',mean time per decision,29.344607216971262,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine batch (1 P/Invoke per 4096 transfers)',standard deviation,0.8463967032251973,ns
+Engine via .NET (BenchmarkDotNet),'C++ engine batch (1 P/Invoke per 4096 transfers)',allocated per decision,0,bytes
+Engine via .NET (BenchmarkDotNet),'C# reference implementation',mean time per decision,5.582810052980979,ns
+Engine via .NET (BenchmarkDotNet),'C# reference implementation',standard deviation,0.23797377093165006,ns
+Engine via .NET (BenchmarkDotNet),'C# reference implementation',allocated per decision,0,bytes
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",requests,15654,requests
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",throughput,260.9,requests/s
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",latency p50,27.484509000000003,ms
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",latency p95,745.3753458499983,ms
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",latency p99,1840.1633491899997,ms
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",latency max,4783.062053,ms
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",completed (success rate),100,%
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",rejected by engine,0,%
+Full stack (k6: HTTP + engine + PostgreSQL),"32 VUs, 60s",errors (failure rate),0,%

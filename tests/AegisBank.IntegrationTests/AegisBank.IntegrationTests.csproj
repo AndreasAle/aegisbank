@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetVersion)" />
+    <ProjectReference Include="..\..\src\AegisBank.Api\AegisBank.Api.csproj" />
+    <!-- Both hosts define a top-level Program class; the alias keeps them apart. -->
+    <ProjectReference Include="..\..\src\AegisBank.Dashboard\AegisBank.Dashboard.csproj" Aliases="dashboard" />
+    <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+</Project>

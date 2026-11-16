@@ -1,0 +1,14 @@
+{
+  "benchmark": "aegis_engine_native",
+  "engine_version": "1.0.0",
+  "compiler": "gcc 13.3",
+  "dataset_size": 1000000,
+  "approved_in_dataset": 404074,
+  "repetitions": 15,
+  "warmup_passes": 1,
+  "results": [
+    {"name": "cpp_domain_evaluate_transfer", "median_ns_per_op": 7.744, "min_ns_per_op": 7.437, "max_ns_per_op": 8.913, "ops_per_second": 129133115.193, "checksum": 12062528595696497491},
+    {"name": "c_abi_evaluate_transfer", "median_ns_per_op": 25.447, "min_ns_per_op": 24.804, "max_ns_per_op": 26.648, "ops_per_second": 39297196.365, "checksum": 12062528595696497491},
+    {"name": "c_abi_evaluate_transfer_batch", "median_ns_per_op": 39.994, "min_ns_per_op": 36.725, "max_ns_per_op": 47.010, "ops_per_second": 25003676.791, "checksum": 12062528595696497491}
+  ]
+}

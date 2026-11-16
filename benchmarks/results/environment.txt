@@ -1,0 +1,10 @@
+CPU(s):                               16
+Model name:                           AMD Ryzen 7 6800H with Radeon Graphics
+Thread(s) per core:                   2
+Core(s) per socket:                   8
+               total        used        free      shared  buff/cache   available
+Mem:           6.6Gi       2.0Gi       2.8Gi       511Mi       2.5Gi       4.7Gi
+6.6.87.2-microsoft-standard-WSL2
+10.0.404
+g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+PRETTY_NAME="Ubuntu 24.04.5 LTS"

@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Deterministic>true</Deterministic>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <!-- Directory that holds the native engine built by scripts/build-engine.sh -->
+    <AegisNativeDir Condition="'$(AegisNativeDir)' == ''">$(RepoRoot)artifacts/native/</AegisNativeDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EfCoreVersion>10.0.15</EfCoreVersion>
+    <NpgsqlEfVersion>10.0.3</NpgsqlEfVersion>
+    <AspNetVersion>10.0.15</AspNetVersion>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,55 @@
+@page
+@model AegisBank.Dashboard.Pages.Accounts.NewModel
+@{
+    ViewData["Title"] = "Open account";
+    ViewData["Crumb"] = "Accounts";
+}
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head"><h2>New customer account</h2></div>
+        <div class="panel-body">
+            <form method="post" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <input type="hidden" asp-for="Input.RequestKey" />
+                <div class="field-row">
+                    <div class="field">
+                        <label asp-for="Input.CustomerName"></label>
+                        <input asp-for="Input.CustomerName" type="text" />
+                        <span asp-validation-for="Input.CustomerName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Input.CustomerEmail"></label>
+                        <input asp-for="Input.CustomerEmail" type="email" />
+                        <span asp-validation-for="Input.CustomerEmail" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label asp-for="Input.AccountName"></label>
+                        <input asp-for="Input.AccountName" type="text" />
+                        <span asp-validation-for="Input.AccountName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Input.OpeningDeposit">Opening deposit (Rp, optional)</label>
+                        <input asp-for="Input.OpeningDeposit" type="text" inputmode="decimal" placeholder="500000" />
+                        <span asp-validation-for="Input.OpeningDeposit" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary">Open account</button>
+                    <a class="btn" asp-page="/Accounts/Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>What happens</h2></div>
+        <div class="panel-body">
+            <p>The account is created with a zero balance. Balances are never set directly.</p>
+            <p>An opening deposit is posted as a journal entry that debits <span class="mono">Vault cash</span> and credits the new account, so the ledger stays balanced from the first rupiah.</p>
+            <p class="dim">Use fictional names only. This is a simulation.</p>
+        </div>
+    </section>
+</div>

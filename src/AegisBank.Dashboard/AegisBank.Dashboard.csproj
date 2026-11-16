@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\AegisBank.Application\AegisBank.Application.csproj" />
+    <ProjectReference Include="..\AegisBank.Infrastructure\AegisBank.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AegisBank.IntegrationTests" />
+  </ItemGroup>
+</Project>

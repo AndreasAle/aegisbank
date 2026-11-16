@@ -1,0 +1,127 @@
+@page "{id:guid}"
+@model AegisBank.Dashboard.Pages.Accounts.DetailsModel
+@{
+    var a = Model.Account;
+    ViewData["Title"] = "Account " + a.AccountNumber;
+    ViewData["Crumb"] = "Accounts";
+}
+
+<div class="figures">
+    <div class="figure">
+        <div class="figure-label">Available balance</div>
+        <div class="figure-value small">@Ui.Money(a.AvailableBalanceMinorUnits, a.Currency)</div>
+        <div class="figure-note">ledger projection, version @a.Version</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Status</div>
+        <div class="figure-value small"><span class="st @Ui.StatusClass(a.Status)">@a.Status</span></div>
+        <div class="figure-note">updated @Ui.Time(a.UpdatedAt)</div>
+    </div>
+    <div class="figure">
+        <div class="figure-label">Ledger postings</div>
+        <div class="figure-value small">@Ui.Count(Model.Postings.TotalCount)</div>
+        <div class="figure-note">debits and credits</div>
+    </div>
+</div>
+
+<div class="cols">
+    <section class="panel">
+        <div class="panel-head"><h2>Postings</h2><span class="dim">newest first</span></div>
+        @if (Model.Postings.Items.Count == 0)
+        {
+            <div class="empty">No ledger postings on this account.</div>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead>
+                    <tr><th>Posted (UTC)</th><th>Journal</th><th>Type</th><th>Counterparty</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var t in Model.Postings.Items)
+                    {
+                        <tr>
+                            <td class="nowrap">@Ui.Time(t.PostedAt)</td>
+                            <td><a class="mono" asp-page="/Ledger/Journal" asp-route-id="@t.JournalEntryId">@t.ReferenceNumber</a></td>
+                            <td>@Ui.KindLabel(t.Kind)</td>
+                            <td class="mono">@t.CounterpartyAccountNumber</td>
+                            <td class="num">@(t.Direction == "Debit" ? Ui.Amount(t.AmountMinorUnits) : "")</td>
+                            <td class="num">@(t.Direction == "Credit" ? Ui.Amount(t.AmountMinorUnits) : "")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <partial name="_Pager" model="new PagerModel(Model.Postings.Page, Model.Postings.TotalPages, Model.Postings.TotalCount, Model.Postings.PageSize, Model.PageUrl)" />
+    </section>
+
+    <div>
+        <section class="panel">
+            <div class="panel-head"><h2>Details</h2></div>
+            <dl class="facts">
+                <dt>Account number</dt><dd class="mono">@a.AccountNumber</dd>
+                <dt>Name</dt><dd>@a.Name</dd>
+                <dt>Customer</dt><dd>@a.CustomerName <span class="dim mono">@a.CustomerNumber</span></dd>
+                <dt>Currency</dt><dd>@a.Currency</dd>
+                <dt>Accounting class</dt><dd>@a.AccountClass <span class="dim">(@a.NormalSide.ToLowerInvariant()-normal)</span></dd>
+                <dt>Opened</dt><dd>@Ui.Time(a.CreatedAt)</dd>
+                <dt>Identifier</dt><dd class="mono">@a.Id</dd>
+            </dl>
+        </section>
+
+        @if (Model.IsAdmin && a.CustomerId is not null)
+        {
+            <section class="panel">
+                <div class="panel-head"><h2>Account controls</h2></div>
+                <div class="panel-body stack">
+                    <div class="actions">
+                        @if (a.Status == "Active")
+                        {
+                            <form method="post" asp-page-handler="Status" class="inline-form">
+                                <input type="hidden" name="status" value="Frozen" />
+                                <button type="submit" class="btn">Freeze</button>
+                            </form>
+                        }
+                        @if (a.Status == "Frozen")
+                        {
+                            <form method="post" asp-page-handler="Status" class="inline-form">
+                                <input type="hidden" name="status" value="Active" />
+                                <button type="submit" class="btn">Unfreeze</button>
+                            </form>
+                        }
+                        @if (a.Status != "Closed")
+                        {
+                            <form method="post" asp-page-handler="Status" class="inline-form">
+                                <input type="hidden" name="status" value="Closed" />
+                                <button type="submit" class="btn danger" disabled="@(a.AvailableBalanceMinorUnits != 0)">Close</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="dim">Closed accounts cannot be reopened.</span>
+                        }
+                    </div>
+                    @if (a.Status != "Closed" && a.AvailableBalanceMinorUnits != 0)
+                    {
+                        <div class="field-hint">An account can be closed only when its balance is zero.</div>
+                    }
+
+                    @if (a.Status == "Active")
+                    {
+                        <form method="post" asp-page-handler="Deposit">
+                            <input type="hidden" name="depositKey" value="@Model.DepositKey" />
+                            <div class="field">
+                                <label for="amount">Cash deposit (Rp)</label>
+                                <input id="amount" name="amount" type="text" inputmode="decimal" placeholder="250000" autocomplete="off" />
+                                <div class="field-hint">Posts a journal entry: debit Vault cash, credit this account.</div>
+                            </div>
+                            <button type="submit" class="btn">Post deposit</button>
+                        </form>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+</div>
