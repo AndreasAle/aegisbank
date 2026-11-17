@@ -15,9 +15,12 @@
 <body>
 <div class="signin">
     <section class="signin-form">
-        <div class="wordmark">Aegis<span>Bank</span></div>
-        <h1>Sign in</h1>
-        <div class="dim">Operations console. Staff accounts only.</div>
+        <div class="brand">
+            <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div class="brand-name">Aegis<span>Bank</span></div>
+        </div>
+        <h1>Welcome back</h1>
+        <div class="dim">Sign in to the operations console. Staff accounts only.</div>
 
         <form method="post" autocomplete="off">
             @if (Model.Failed)
